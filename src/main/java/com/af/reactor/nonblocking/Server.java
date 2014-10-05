@@ -88,6 +88,9 @@ public class Server implements Runnable {
         }
     }
 
+    /**
+     * Forward proxy
+     */
     private class ForwardProxy extends Handler {
 
         private String content = null;
@@ -141,6 +144,13 @@ public class Server implements Runnable {
                 channel.close();
             }
         }
+    }
+    
+    private class Client2 extends Handler {
+    	
+    	public Client2() {
+			// TODO Auto-generated constructor stub
+		}
     }
 
     private class Client extends Handler {

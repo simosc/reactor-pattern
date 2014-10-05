@@ -20,7 +20,7 @@ import org.apache.http.util.EntityUtils;
 
 public class NoneBlockingClient {
     
-    static final Logger 
+    static final Logger LOG = Logger.getLogger(NoneBlockingClient.class.getName()); 
     
     final CloseableHttpAsyncClient httpclient;
     
@@ -73,7 +73,13 @@ public class NoneBlockingClient {
 
                 public void completed(final HttpResponse response) {
                     latch.countDown();
-                    System.out.println(request.getRequestLine() + "->" + response.getEntity().toString());
+                    try {
+                    	HttpEntity entity = response.getEntity();
+						String content = IOUtils.toString(entity.getContent());
+	                    System.out.println(request.getRequestLine() + "->" + content);
+					} catch (IllegalStateException | IOException e) {
+						throw new RuntimeException(e);
+					}
                 }
 
                 public void failed(final Exception ex) {
