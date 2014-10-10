@@ -1,6 +1,5 @@
 package com.af.reactor.blocking;
 
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -26,7 +25,7 @@ public class Server implements Runnable {
                 pool.execute(new Handler(socket));
                 LOG.info("Connection: DONE");
             }
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             LOG.log(Level.SEVERE,
                     "Failed to execute server thread: " + ex.getMessage(), ex);
         }
