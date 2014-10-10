@@ -4,34 +4,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Date;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.apache.http.ProtocolVersion;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicHttpResponse;
-import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
 import com.af.reactor.util.HttpUtil;
 
 public class Handler implements Runnable {
 
-	final Socket socket;
+	private static final Logger LOG = Logger.getLogger(Handler.class.getName());
 
-	public static final Logger log = Logger.getLogger(Handler.class.getName());
+	private final Socket socket;
 
 	public Handler(Socket socket) {
 		this.socket = socket;
@@ -42,33 +35,28 @@ public class Handler implements Runnable {
 		try (InputStream in = socket.getInputStream();
 				OutputStream out = socket.getOutputStream()) {
 
+			LOG.info("Read request");
+
 			// Read request
 			HttpRequest request = HttpUtil.parseRequest(in);
 			Map<String, String> params = HttpUtil.parseParams(request);
 
-			// Read from source
+			LOG.info("Request data from proxy");
+
+			// Read from proxy
 			String content = doGet("http://pam.wikipedia.org/w/index.php?search="
 					+ params.get("q"));
 
-			// Write back response
-			String timestamp = DateFormatUtils.SMTP_DATETIME_FORMAT
-					.format(new Date());
-			ProtocolVersion version = new ProtocolVersion("HTTP", 1, 1);
-			BasicHttpResponse response = new BasicHttpResponse(version, 200,
-					"OK");
-			response.addHeader(HTTP.DATE_HEADER, timestamp);
-			response.addHeader(HTTP.SERVER_HEADER, "java-lab-2/0.0.1");
-			response.addHeader(HTTP.CONTENT_TYPE, "text/html; charset=utf-8");
-			response.addHeader(HTTP.CONTENT_LEN,
-					String.valueOf(content.length()));
-			BasicHttpEntity entity = new BasicHttpEntity();
-			entity.setContent(IOUtils.toInputStream(content));
-			response.setEntity(entity);
+			LOG.info("Request data from proxy: DONE");
 
-			HttpUtil.writeResponse(response, out);
+			LOG.info("Write data to source");
+
+			HttpUtil.writeResponse(content, out);
+
+			LOG.info("Read request: DONE");
 
 		} catch (IOException ex) {
-			log.log(Level.SEVERE,
+			LOG.log(Level.SEVERE,
 					"Failed to execute handler: " + ex.getMessage(), ex);
 		}
 	}

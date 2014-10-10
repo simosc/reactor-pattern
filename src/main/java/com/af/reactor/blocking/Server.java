@@ -10,20 +10,23 @@ import java.util.logging.Logger;
 
 public class Server implements Runnable {
 
-    static final int PORT = 4711;
-    static final Logger log = Logger.getLogger(Server.class.getName());
+    private static final int PORT = 4711;
+    private static final Logger LOG = Logger.getLogger(Server.class.getName());
     
     static ExecutorService pool = Executors.newFixedThreadPool(2);
 
     public void run() {
 
         try (ServerSocket server = new ServerSocket(PORT)) {
+        	// Wait for an connection
             while (!Thread.interrupted()) {
+				LOG.info("Got connection");
                 Socket socket = server.accept();
                 pool.execute(new Handler(socket));
+                LOG.info("Connection: DONE");
             }
         } catch (IOException ex) {
-            log.log(Level.SEVERE,
+            LOG.log(Level.SEVERE,
                     "Failed to execute server thread: " + ex.getMessage(), ex);
         }
     }

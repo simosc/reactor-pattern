@@ -2,9 +2,9 @@ package com.af.reactor.nonblocking;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.apache.http.HttpRequest;
 
@@ -14,32 +14,36 @@ import com.af.reactor.util.HttpUtil;
  * Forward Proxy
  */
 public class ForwardProxy extends Handler {
-
-	private final SocketChannel channel;
-	private final SelectionKey key;
+	
+	public static final Logger LOG = Logger.getLogger(ForwardProxy.class.getName());
 
 	private String content = null;
 	private Client client = null;
 
-	public ForwardProxy(Selector selector, SocketChannel channel)
-			throws IOException {
-
-		this.channel = channel;
-		channel.configureBlocking(false);
-		key = channel.register(selector, SelectionKey.OP_READ, this);
-		selector.wakeup();
-	}
-
 	@Override
-	public void read() throws IOException {
-
+	public void read(SelectionKey key) throws IOException {
+		
+		LOG.info("Read client connection");
+		
+		// Get the channel
+		SocketChannel channel = (SocketChannel) key.channel();
+		
+		// Parse the channel data as an HTTP request
 		HttpRequest request = HttpUtil.parseRequest(channel);
+		
+		// Get the request arguments from the request
 		Map<String, String> params = HttpUtil.parseParams(request);
+		
+		// Create a client to proxy the request with. Use function
 		client = new Client((x) -> this.setContent(x));
 		String url = "http://pam.wikipedia.org/w/index.php?search="
 				+ params.get("q");
 		client.execute(url);
+		
+		// Indicate that we'd like to write data back to source
 		key.interestOps(SelectionKey.OP_WRITE);
+		
+		LOG.info("Read client connection: DONE");
 	}
 
 	public void setContent(String content) {
@@ -49,11 +53,14 @@ public class ForwardProxy extends Handler {
 	}
 
 	@Override
-	public void write() throws IOException {
+	public void write(SelectionKey key) throws IOException {
 
+		SocketChannel channel = (SocketChannel) key.channel();
 		if (this.content != null) {
+			LOG.info("Write data back to source");
 			HttpUtil.writeResponse(this.content, channel);
 			channel.close();
+			LOG.info("Write data back to source: DONE");
 		}
 	}
 }
