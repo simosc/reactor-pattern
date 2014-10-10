@@ -20,8 +20,9 @@ public class Server implements Runnable {
         try (ServerSocket server = new ServerSocket(PORT)) {
         	// Wait for an connection
             while (!Thread.interrupted()) {
-				LOG.info("Got connection");
+				LOG.info("Wait for connection");
                 Socket socket = server.accept();
+                LOG.info("Got a connection");
                 pool.execute(new Handler(socket));
                 LOG.info("Connection: DONE");
             }
