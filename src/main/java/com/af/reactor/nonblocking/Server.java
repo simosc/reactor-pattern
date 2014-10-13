@@ -45,8 +45,6 @@ public class Server implements Runnable {
 
 			// Wait for an event from one of the registered channels
 			while (selector.select() > 0) {
-
-				LOG.info("Got event from a channel");
 				
 				// Iterate over the set of keys for which events are available
 				Set<SelectionKey> selected = selector.selectedKeys();
