@@ -24,15 +24,12 @@ public class Client implements FutureCallback<HttpResponse> {
 	}
 
 	public void execute(String url) {
-		LOG.info("Execute request: " + url);
 		final HttpGet request = new HttpGet(url);
 		httpclient.execute(request, this);
-		LOG.info("Execute request: DONE");
 	}
 
 	public void close() {
 		try {
-			LOG.info("Close client connection");
 			httpclient.close();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -42,9 +39,7 @@ public class Client implements FutureCallback<HttpResponse> {
 	@Override
 	public void completed(HttpResponse result) {
 		try {
-			LOG.info("Set content from request");
 			receiver.setContent(IOUtils.toString(result.getEntity().getContent()));
-			LOG.info("Set content from request: DONE");
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

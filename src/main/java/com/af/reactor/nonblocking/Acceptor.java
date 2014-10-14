@@ -31,7 +31,5 @@ public class Acceptor extends Handler {
 		// we'd like to be notified when there's data waiting to be read
 		socketChannel.register(key.selector(), SelectionKey.OP_READ,
 				new ForwardProxy());
-		
-		LOG.info("Accept client connection: DONE");
 	}
 }

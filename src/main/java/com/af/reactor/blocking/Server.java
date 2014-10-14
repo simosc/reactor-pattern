@@ -11,19 +11,20 @@ public class Server implements Runnable {
 
     private static final int PORT = 4711;
     private static final Logger LOG = Logger.getLogger(Server.class.getName());
-    
+
     static ExecutorService pool = Executors.newFixedThreadPool(2);
 
     public void run() {
 
         try (ServerSocket server = new ServerSocket(PORT)) {
-        	// Wait for an connection
+            LOG.info("Server listening to port: " + server.getLocalPort());
             while (!Thread.interrupted()) {
-				LOG.info("Wait for connection");
+
+                // Wait for an connection
                 Socket socket = server.accept();
-                LOG.info("Got a connection");
+                // Process request, if no thread available, place request in
+                // queue
                 pool.execute(new Handler(socket));
-                LOG.info("Connection: DONE");
             }
         } catch (Exception ex) {
             LOG.log(Level.SEVERE,

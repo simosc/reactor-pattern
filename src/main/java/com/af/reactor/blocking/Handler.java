@@ -33,19 +33,16 @@ public class Handler implements Runnable {
 		try (InputStream in = socket.getInputStream();
 				OutputStream out = socket.getOutputStream()) {
 
-			LOG.info("Request data from proxy");
-
+		    // Read request
+		    HttpUtil.parseRequest(in);
+		    
 			// Read from proxy
 			String content = doGet("http://localhost:9234");
 
-			LOG.info("Request data from proxy: DONE");
-
-			LOG.info("Write data to source");
-
+			// Write back response
 			HttpUtil.writeResponse(content, out);
 
-			LOG.info("Read request: DONE");
-			
+			// Close connection
 			socket.close();
 
 		} catch (IOException ex) {

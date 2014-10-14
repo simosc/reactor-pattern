@@ -21,7 +21,8 @@ public class ForwardProxy extends Handler {
 	@Override
 	public void read(SelectionKey key) throws IOException {
 
-		LOG.info("Read client connection");
+		// Read request from client
+        HttpUtil.parseRequest((SocketChannel) key.channel());
 
 		// Create a client to proxy the request with. Use function
 		client = new Client((x) -> this.setContent(x));
@@ -30,8 +31,6 @@ public class ForwardProxy extends Handler {
 
 		// Indicate that we'd like to write data back to source
 		key.interestOps(SelectionKey.OP_WRITE);
-
-		LOG.info("Read client connection: DONE");
 	}
 
 	public void setContent(String content) {
@@ -45,10 +44,9 @@ public class ForwardProxy extends Handler {
 
 		SocketChannel channel = (SocketChannel) key.channel();
 		if (this.content != null) {
-			LOG.info("Write data back to source");
+			// We got content from proxy, respond to client and close sockt
 			HttpUtil.writeResponse(this.content, channel);
 			channel.close();
-			LOG.info("Write data back to source: DONE");
 		}
 	}
 }
